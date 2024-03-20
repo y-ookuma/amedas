@@ -130,8 +130,10 @@ class Amedas():
   def get_bulk(self,output_csv=bool):
     # 総行数を取得します
     rows = len(self.lib_df)
-    for index, row in tqdm(self.lib_df.iterrows(), ncols=None):
-      print("【%s/%s】 %s" % (index+1,rows,row["station_name"]))
+    icnt = 0
+    for index,row in tqdm(self.lib_df.iterrows(), ncols=None):
+      icnt += 1
+      print("【%s/%s】 %s" % (str(icnt),rows,row["station_name"]))
       url_p={}
       url_p["fuken_id"]     = row["fuken_id"]
       url_p["type_"]        = row["type"]

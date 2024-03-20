@@ -131,6 +131,7 @@ class Amedas():
     # 総行数を取得します
     rows = len(self.lib_df)
     icnt = 0
+    result ={} # return用辞書
     for index,row in tqdm(self.lib_df.iterrows(), ncols=None):
       icnt += 1
       print("【%s/%s】 %s" % (str(icnt),rows,row["station_name"]))
@@ -155,18 +156,21 @@ class Amedas():
         # データフレームを追加
         sum_df = pd.concat([sum_df, df])
 
-    # CSVファイルに出力
-    if output_csv:
-      outputfile="/out/" + url_p["station_name"] + ".csv"
-      filepath = os.path.dirname(os.path.abspath(__file__))+ outputfile
-      sum_df.to_csv(filepath, index=True)
-    return sum_df
+      # CSVファイルに出力
+      if output_csv:
+        outputfile="/out/" + url_p["station_name"] + ".csv"
+        filepath = os.path.dirname(os.path.abspath(__file__))+ outputfile
+        sum_df.to_csv(filepath, index=True)
+
+      result[url_p["station_id"]]=sum_df
+    return result
 
   # 個別処理の場合
   def get_1by1(self,output_csv=bool,station_id_list=None):
     # セクションを指定してすべてのキーを取得
     icnt=0
     keys = station_id_list
+    result ={} # return用辞書
     for k in tqdm(keys, ncols=None):
       icnt+=1
       # station_idが指定の値である行を取得します。
@@ -174,7 +178,7 @@ class Amedas():
       # データフレームを辞書に変換します。
       dict_row = row.to_dict('records')
 
-      print("【%s/%s】 %s" % (str(icnt),str(len(keys)-1),row["station_name"]))
+      print("【%s/%s】 %s" % (str(icnt),str(len(keys)),row["station_name"]))
 
       url_p={}
       url_p["fuken_id"]     = dict_row[0]["fuken_id"]
@@ -197,9 +201,11 @@ class Amedas():
         # データフレームを追加
         sum_df = pd.concat([sum_df, df])
         # CSVファイルに出力
-    if output_csv:
-      outputfile="/out/" + url_p["station_name"] + ".csv"
-      filepath = os.path.dirname(os.path.abspath(__file__))+ outputfile
-      sum_df.to_csv(filepath, index=True)
-    return sum_df
+      if output_csv:
+        outputfile="/out/" + url_p["station_name"] + ".csv"
+        filepath = os.path.dirname(os.path.abspath(__file__))+ outputfile
+        sum_df.to_csv(filepath, index=True)
+
+      result[k]=sum_df
+    return result
 

@@ -36,11 +36,11 @@ def getJMA_Data_per_10min(url_p):
   # Dataframe 作成
   try:
     url = base_urls.format(**url_p) 
-    print(url)
+#    print(url)
     df = pd.read_html(url)[0]
   except:
     url = base_urla.format(**url_p) 
-    print(url)
+#    print(url)
     df = pd.read_html(url)[0]
 
 
@@ -98,14 +98,12 @@ def getJMA_Data_per_10min(url_p):
 
   return df
 
-class Amedas:
+class Amedas():
   # 設定ファイルを読み込む。
-  def __init__(self, day_series=None, config=None, lib_df=None):
-    filepath = os.path.dirname(os.path.abspath(__file__)) + '/ame.cfg'
-    self.config = configparser.ConfigParser()
-    self.config.read(filepath)
+  def __init__(self, day_series=None, config=None, lib_df=None
+                , lib=None, start_day=None, end_day=None):
 
-    lib_filepath = os.path.dirname(os.path.abspath(__file__)) + '/' + self.config["Amedas_Station_LIB"]["filename"]
+    lib_filepath = os.path.dirname(os.path.abspath(__file__)) + '/' + lib
     lib_df = pd.read_csv(lib_filepath, encoding='utf-8')
     # station_idがnullでなく、f_temがYである行だけを保持します
     self.lib_df = lib_df[lib_df['station_id'].notna() & (lib_df['f_tem'] == 'Y')]
@@ -117,94 +115,89 @@ class Amedas:
 
     # start_day
     start_date = yesterday.date()
-    if self.config["start_end_day"]["start_day"] != "":
-      start_date = datetime.strptime(self.config["start_end_day"]["start_day"], "%Y-%m-%d")
+    if start_day != "":
+      start_date = datetime.strptime(start_day, "%Y-%m-%d")
 
     # end_day
     end_date = yesterday.date()
-    if self.config["start_end_day"]["end_day"] != "":
-      end_date = datetime.strptime(self.config["start_end_day"]["end_day"], "%Y-%m-%d")
+    if end_day != "":
+      end_date = datetime.strptime(end_day, "%Y-%m-%d")
 
     self.day_series = pd.date_range(start=start_date, end=end_date, freq='D')
 
 
   # bulk処理の場合
-  def get_bulk(self):
-    if self.config["station_id"]["bulk"]=="True":
-      # 総行数を取得します
-      rows = len(self.lib_df)
-      for index, row in tqdm(self.lib_df.iterrows(), ncols=None):
-        print("【%s/%s】 %s" % (index+1,rows,row["station_name"]))
-        url_p={}
-        url_p["fuken_id"]     = row["fuken_id"]
-        url_p["type_"]        = row["type"]
-        url_p["station_name"] = row["station_name"]
-        url_p["f_tem"]        = row["f_tem"] #気温
-        url_p["station_id"]   = int(row["station_id"])
+  def get_bulk(self,output_csv=bool):
+    # 総行数を取得します
+    rows = len(self.lib_df)
+    for index, row in tqdm(self.lib_df.iterrows(), ncols=None):
+      print("【%s/%s】 %s" % (index+1,rows,row["station_name"]))
+      url_p={}
+      url_p["fuken_id"]     = row["fuken_id"]
+      url_p["type_"]        = row["type"]
+      url_p["station_name"] = row["station_name"]
+      url_p["f_tem"]        = row["f_tem"] #気温
+      url_p["station_id"]   = int(row["station_id"])
 
-        # 空のデータフレームを作成
-        sum_df = pd.DataFrame()
-#      for date in tqdm(day_series, ncols=None):
-        for date in self.day_series:
-          url_p["year"] = date.year
-          url_p["month"] = date.month
-          url_p["day"] = date.day
-          url_p["month_str"] = f"{date.month:02d}" # 月を2桁の文字列に変換
-          url_p["day_str"] = f"{date.day:02d}"     # 日を2桁の文字列に変換
+      # 空のデータフレームを作成
+      sum_df = pd.DataFrame()
+      for date in self.day_series:
+        url_p["year"] = date.year
+        url_p["month"] = date.month
+        url_p["day"] = date.day
+        url_p["month_str"] = f"{date.month:02d}" # 月を2桁の文字列に変換
+        url_p["day_str"] = f"{date.day:02d}"     # 日を2桁の文字列に変換
 
-          df=getJMA_Data_per_10min(url_p)
+        df=getJMA_Data_per_10min(url_p)
 
-          # データフレームを追加
-          sum_df = pd.concat([sum_df, df])
+        # データフレームを追加
+        sum_df = pd.concat([sum_df, df])
 
-      # CSVファイルに出力
+    # CSVファイルに出力
+    if output_csv:
       outputfile="/out/" + url_p["station_name"] + ".csv"
       filepath = os.path.dirname(os.path.abspath(__file__))+ outputfile
       sum_df.to_csv(filepath, index=True)
-      return sum_df
+    return sum_df
 
   # 個別処理の場合
-  def get_1by1(self):
-    if self.config["station_id"]["bulk"]!="True":
-      # セクションを指定してすべてのキーを取得
-      icnt=0
-      keys = self.config.options('station_id')
-      for k in tqdm(keys, ncols=None):
-        print(k,self.config["station_id"][k])
-        if k != "bulk":
-          icnt+=1
-          # station_idが指定の値である行を取得します。
-          row = self.lib_df[self.lib_df['station_id'] == int(k)]
-          # データフレームを辞書に変換します。
-          dict_row = row.to_dict('records')
+  def get_1by1(self,output_csv=bool,station_id_list=None):
+    # セクションを指定してすべてのキーを取得
+    icnt=0
+    keys = station_id_list
+    for k in tqdm(station_id_list, ncols=None):
+      icnt+=1
+      # station_idが指定の値である行を取得します。
+      row = self.lib_df[self.lib_df['station_id'] == int(k)]
+      # データフレームを辞書に変換します。
+      dict_row = row.to_dict('records')
 
-          print("【%s/%s】 %s" % (str(icnt),str(len(keys)-1),row["station_name"]))
+      print("【%s/%s】 %s" % (str(icnt),str(len(keys)-1),row["station_name"]))
 
-          url_p={}
-          url_p["fuken_id"]     = dict_row[0]["fuken_id"]
-          url_p["type_"]        = dict_row[0]["type"]
-          url_p["station_name"] = dict_row[0]["station_name"]
-          url_p["f_tem"]        = dict_row[0]["f_tem"] #気温
-          url_p["station_id"]   = int(dict_row[0]["station_id"])
+      url_p={}
+      url_p["fuken_id"]     = dict_row[0]["fuken_id"]
+      url_p["type_"]        = dict_row[0]["type"]
+      url_p["station_name"] = dict_row[0]["station_name"]
+      url_p["f_tem"]        = dict_row[0]["f_tem"] #気温
+      url_p["station_id"]   = int(dict_row[0]["station_id"])
 
-          # 空のデータフレームを作成
-          sum_df = pd.DataFrame()
-#      for date in tqdm(day_series, ncols=None):
-          for date in self.day_series:
-            url_p["year"] = date.year
-            url_p["month"] = date.month
-            url_p["day"] = date.day
-            url_p["month_str"] = f"{date.month:02d}" # 月を2桁の文字列に変換
-            url_p["day_str"] = f"{date.day:02d}"     # 日を2桁の文字列に変換
+      # 空のデータフレームを作成
+      sum_df = pd.DataFrame()
+      for date in self.day_series:
+        url_p["year"] = date.year
+        url_p["month"] = date.month
+        url_p["day"] = date.day
+        url_p["month_str"] = f"{date.month:02d}" # 月を2桁の文字列に変換
+        url_p["day_str"] = f"{date.day:02d}"     # 日を2桁の文字列に変換
 
-            df=getJMA_Data_per_10min(url_p)
+        df=getJMA_Data_per_10min(url_p)
 
-            # データフレームを追加
-            sum_df = pd.concat([sum_df, df])
-
-          # CSVファイルに出力
-          outputfile="/out/" + url_p["station_name"] + ".csv"
-          filepath = os.path.dirname(os.path.abspath(__file__))+ outputfile
-          sum_df.to_csv(filepath, index=True)
-          return sum_df
+        # データフレームを追加
+        sum_df = pd.concat([sum_df, df])
+        # CSVファイルに出力
+      if output_csv:
+        outputfile="/out/" + url_p["station_name"] + ".csv"
+        filepath = os.path.dirname(os.path.abspath(__file__))+ outputfile
+        sum_df.to_csv(filepath, index=True)
+      return sum_df
 

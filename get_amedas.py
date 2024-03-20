@@ -167,7 +167,7 @@ class Amedas():
     # セクションを指定してすべてのキーを取得
     icnt=0
     keys = station_id_list
-    for k in tqdm(station_id_list, ncols=None):
+    for k in tqdm(keys, ncols=None):
       icnt+=1
       # station_idが指定の値である行を取得します。
       row = self.lib_df[self.lib_df['station_id'] == int(k)]
@@ -197,9 +197,9 @@ class Amedas():
         # データフレームを追加
         sum_df = pd.concat([sum_df, df])
         # CSVファイルに出力
-      if output_csv:
-        outputfile="/out/" + url_p["station_name"] + ".csv"
-        filepath = os.path.dirname(os.path.abspath(__file__))+ outputfile
-        sum_df.to_csv(filepath, index=True)
-      return sum_df
+    if output_csv:
+      outputfile="/out/" + url_p["station_name"] + ".csv"
+      filepath = os.path.dirname(os.path.abspath(__file__))+ outputfile
+      sum_df.to_csv(filepath, index=True)
+    return sum_df
 

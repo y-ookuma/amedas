@@ -32,7 +32,7 @@
   ```unzip amedas-main.zip ```  
 
 
-## 使用方法
+## 使用例
 
 - 2024-03-01〜2024-03-02 の「熊谷」,「さいたま」のアメダスのデータを取得します。
 - station_id_list に 取得したい観測地点の station_id をセットします。station_idは ame_master.csv より確認ください。

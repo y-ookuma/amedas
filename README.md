@@ -20,7 +20,8 @@
 ## AMeDASライブラリ
 - ame_master.csv  
   fuken_id,f_pre,f_tem,station_name,station_id のみ使用  
-※ [washitake.com](https://washitake.com/weather/amedas/obs_stations.md)より引用しています。  
+※ [washitake.com](https://washitake.com/weather/amedas/obs_stations.md)より引用しています。
+  なお、気温が収集されていない「f_tem」もしくは、「station_id」がない観測地点はデータが取得出来ません。
 
 
 ## 環境構築手順

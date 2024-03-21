@@ -31,11 +31,13 @@
   ```wget https://github.com/y-ookuma/amedas/archive/refs/heads/main.zip ```  
   ```unzip amedas-main.zip ```  
 - ame_master.csv tool_amedas.py があるフォルダにて下記使用例を参考に実施ください。  
+- 出力csvは csvフォルダに出力されます。  
 
 ## 使用例
 
 - 2024-03-01〜2024-03-02 の「熊谷」,「さいたま」のアメダスのデータを取得します。
 - station_id_list に 取得したい観測地点の station_id をセットします。station_idは ame_master.csv より確認ください。
+- 出力csvは csvフォルダに出力されます。  
 
 ```  
 from tool_amedas import Amedas

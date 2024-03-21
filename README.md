@@ -30,7 +30,7 @@
   もしくは  
   ```wget https://github.com/y-ookuma/amedas/archive/refs/heads/main.zip ```  
   ```unzip amedas-main.zip ```  
-
+- ame_master.csv tool_amedas.py があるフォルダにて下記使用例を参考に実施ください。  
 
 ## 使用例
 

@@ -18,9 +18,9 @@
 
 
 ## AMeDASライブラリ
-- ame_master.csv
-  fuken_id,f_pre,f_tem,station_name,station_id のみ使用
-※ [washitake.com](https://washitake.com/weather/amedas/obs_stations.md)より引用しています。
+- ame_master.csv  
+  fuken_id,f_pre,f_tem,station_name,station_id のみ使用  
+※ [washitake.com](https://washitake.com/weather/amedas/obs_stations.md)より引用しています。  
 
 
 ## 環境構築手順
